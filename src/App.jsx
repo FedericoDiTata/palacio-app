@@ -40,7 +40,7 @@ const MONTHS = [
 ];
 
 const ALL_WEEKS  = MONTHS.flatMap(m => m.weeks);
-const DAYS_FULL  = { Lun:"Lunes", Mar:"Martes", Mié:"Miércoles", Jue:"Jueves", Vie:"Viernes", Sáb:"Sábado", Dom:"Domingo" };
+const DAYS_FULL  = { Lun:"Lunes", Mar:"Martes", Mié:"Miérc.", Jue:"Jueves", Vie:"Viern.", Sáb:"Sábado", Dom:"Domingo" };
 const DAYS_ORDER = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
 const USERS      = ["Fede","Zikiel"];
 const STATUSES   = ["pendiente","en curso","listo"];
@@ -252,15 +252,21 @@ function RightPanel({ tasks, activeDay, activeWeek, onOpenTask }) {
   const currentWeek=ALL_WEEKS.find(w=>w.id===activeWeek);
 
   function Bar({label,done,total,color}) {
+    const pct = total>0 ? (done/total)*100 : 0;
     return (
-      <div style={{marginBottom:13}}>
-        <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
-          <span style={{fontSize:11,color:C.perla2}}>{label}</span>
-          <span style={{fontSize:11,color,fontWeight:700}}>{done}<span style={{color:C.perla3}}>/{total}</span></span>
+      <div style={{marginBottom:14}}>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+          <span style={{fontSize:12,color:C.perla2,letterSpacing:0.5}}>{label}</span>
+          <span style={{fontSize:12,color:total===0?C.perla3:color,fontWeight:700}}>
+            {total===0 ? <span style={{color:C.perla3,fontSize:10}}>sin tareas</span> : <>{done}<span style={{color:C.perla3}}>/{total}</span></>}
+          </span>
         </div>
-        <div style={{height:3,background:C.border,borderRadius:2,overflow:"hidden"}}>
-          <div style={{height:"100%",background:color,borderRadius:2,width:`${total>0?(done/total)*100:0}%`,transition:"width 0.5s"}}/>
+        <div style={{height:4,background:C.border,borderRadius:2,overflow:"hidden"}}>
+          {total>0&&<div style={{height:"100%",background:color,borderRadius:2,width:`${pct}%`,
+            minWidth:pct>0?4:0,transition:"width 0.5s",
+            boxShadow:pct>0?`0 0 6px ${color}88`:""}}/>}
         </div>
+        {total>0&&pct===0&&<div style={{fontSize:9,color:C.perla3,marginTop:4,letterSpacing:0.5}}>0 completadas de {total}</div>}
       </div>
     );
   }
@@ -270,25 +276,29 @@ function RightPanel({ tasks, activeDay, activeWeek, onOpenTask }) {
       width:290, minWidth:290, flexShrink:0, flexGrow:1,
       borderLeft:`2px solid ${C.borderH}`,
       background:C.panel, display:"flex", flexDirection:"column",
-      height:"calc(100vh - 58px)", position:"sticky", top:58, overflowY:"auto",
+      height:"100%", overflowY:"auto",
     }}>
       <div style={{padding:"20px 18px",borderBottom:`1px solid ${C.border2}`}}>
-        <div style={{fontSize:8,color:C.oro,letterSpacing:2.5,marginBottom:14}}>PROGRESO</div>
+        <div style={{fontSize:9,color:C.oro,letterSpacing:2.5,marginBottom:14}}>PROGRESO</div>
         <Bar label="Hoy" done={todayDone} total={today.length} color={C.oro}/>
         <Bar label={activeWeek} done={weekDone} total={weekT.length} color={C.oro}/>
         <div style={{height:1,background:C.border,margin:"12px 0"}}/>
         {[{user:"Fede",tasks:fedeT},{user:"Zikiel",tasks:zikielT}].map(({user,tasks:ut})=>(
-          <div key={user} style={{display:"flex",gap:10,alignItems:"center",marginBottom:10}}>
-            <Avatar user={user} size={26}/>
+          <div key={user} style={{display:"flex",gap:10,alignItems:"center",marginBottom:12}}>
+            <Avatar user={user} size={28}/>
             <div style={{flex:1}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                <span style={{fontSize:11,color:C.perla2}}>{user}</span>
-                <span style={{fontSize:11,color:C.perla2,fontWeight:700}}>{ut.filter(t=>t.status==="listo").length}<span style={{color:C.perla3}}>/{ut.length}</span></span>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
+                <span style={{fontSize:13,color:C.perla,letterSpacing:1,fontWeight:600}}>{user}</span>
+                <span style={{fontSize:12,color:C.perla,fontWeight:700}}>
+                  {ut.filter(t=>t.status==="listo").length}
+                  <span style={{color:C.perla3,fontWeight:400}}>/{ut.length}</span>
+                </span>
               </div>
-              <div style={{height:3,background:C.border,borderRadius:2,overflow:"hidden"}}>
+              <div style={{height:4,background:C.border,borderRadius:2,overflow:"hidden"}}>
                 <div style={{height:"100%",background:user==="Fede"?C.oro:C.perla2,borderRadius:2,
                   width:`${ut.length>0?(ut.filter(t=>t.status==="listo").length/ut.length)*100:0}%`,transition:"width 0.5s"}}/>
               </div>
+              {ut.length===0&&<div style={{fontSize:9,color:C.perla3,marginTop:3}}>sin tareas asignadas</div>}
             </div>
           </div>
         ))}
@@ -315,43 +325,56 @@ function RightPanel({ tasks, activeDay, activeWeek, onOpenTask }) {
       )}
 
       <div style={{padding:"16px 18px",borderBottom:`1px solid ${C.border2}`}}>
-        <div style={{fontSize:8,color:C.oro,letterSpacing:2.5,marginBottom:12}}>SEMANA · {activeWeek.toUpperCase()}</div>
-        <div style={{display:"flex",gap:3}}>
+        <div style={{fontSize:9,color:C.oro,letterSpacing:2.5,marginBottom:12}}>SEMANA · {activeWeek.toUpperCase()}</div>
+        <div style={{display:"flex",gap:4}}>
           {(currentWeek?.days||DAYS_ORDER).map((d)=>{
             const dt=tasks.filter(t=>t.week===activeWeek&&t.day===d);
             const dd=dt.filter(t=>t.status==="listo").length;
             const isActive=d===activeDay, allDone=dt.length>0&&dd===dt.length;
+            const hasTasks=dt.length>0;
             return (
-              <div key={d} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
-                <div style={{fontSize:7,color:isActive?C.oro:C.perla3,letterSpacing:0.5}}>{d[0]}</div>
-                <div style={{width:"100%",height:28,background:C.surface2,
-                  border:`1px solid ${isActive?C.oro_b:C.border}`,
-                  borderRadius:3,position:"relative",overflow:"hidden"}}>
-                  {dt.length>0&&<div style={{position:"absolute",bottom:0,left:0,right:0,
-                    height:`${(dd/dt.length)*100}%`,background:allDone?C.verde:C.oro,opacity:0.45,transition:"height 0.4s"}}/>}
-                  <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",
-                    fontSize:8,color:dt.length>0?C.perla2:C.perla3,fontWeight:600}}>
-                    {dt.length>0?dt.length:"·"}
+              <div key={d} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                <div style={{fontSize:9,color:isActive?C.oro:C.perla2,fontWeight:isActive?700:400,letterSpacing:0.5}}>
+                  {d.slice(0,2).toUpperCase()}
+                </div>
+                <div style={{
+                  width:"100%", height:34, borderRadius:4,
+                  background: allDone ? C.verde+"33" : hasTasks ? C.oro+"1a" : C.surface2,
+                  border:`1px solid ${isActive?C.oro:allDone?C.verde:hasTasks?C.oro+"44":C.border}`,
+                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
+                }}>
+                  <div style={{fontSize:11,fontWeight:700,color:allDone?C.verde:hasTasks?C.oro:C.perla3}}>
+                    {hasTasks ? dt.length : "—"}
                   </div>
+                  {hasTasks&&<div style={{fontSize:7,color:C.perla3}}>{dd}/{dt.length}</div>}
                 </div>
               </div>
             );
           })}
         </div>
+        <div style={{display:"flex",gap:12,marginTop:10,justifyContent:"center"}}>
+          <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:8,height:8,borderRadius:2,background:C.oro+"33",border:`1px solid ${C.oro+"44"}`}}/><span style={{fontSize:9,color:C.perla3}}>con tareas</span></div>
+          <div style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:8,height:8,borderRadius:2,background:C.verde+"33",border:`1px solid ${C.verde}`}}/><span style={{fontSize:9,color:C.perla3}}>completo</span></div>
+        </div>
       </div>
 
       <div style={{padding:"16px 18px",flex:1}}>
-        <div style={{fontSize:8,color:C.oro,letterSpacing:2.5,marginBottom:12}}>PRÓXIMAS TAREAS</div>
-        <div style={{display:"flex",flexDirection:"column",gap:5}}>
+        <div style={{fontSize:9,color:C.oro,letterSpacing:2.5,marginBottom:12}}>PRÓXIMAS TAREAS</div>
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
           {upcoming.length===0
-            ?<div style={{fontSize:11,color:C.perla3}}>Sin tareas pendientes</div>
+            ?<div style={{fontSize:11,color:C.perla3,fontStyle:"italic"}}>Sin tareas pendientes</div>
             :upcoming.map(t=>(
               <div key={t.id} onClick={()=>onOpenTask(t)}
-                style={{padding:"8px 10px",background:C.surface2,border:`1px solid ${C.border}`,borderRadius:5,cursor:"pointer",transition:"all 0.15s"}}>
-                <div style={{fontSize:12,color:C.perla2,lineHeight:1.3,marginBottom:4}}>{t.title}</div>
-                <div style={{display:"flex",alignItems:"center",gap:5}}>
-                  <Avatar user={t.assignee} size={14}/>
-                  <span style={{fontSize:9,color:C.perla3}}>{t.day} · {t.week}</span>
+                style={{padding:"10px 12px",background:C.surface2,border:`1px solid ${C.border}`,
+                  borderLeft:`3px solid ${t.assignee==="Fede"?C.oro:C.perla2}`,
+                  borderRadius:5,cursor:"pointer",transition:"all 0.15s"}}>
+                <div style={{fontSize:13,color:C.perla,lineHeight:1.3,marginBottom:6,fontWeight:500}}>{t.title}</div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <Avatar user={t.assignee} size={18}/>
+                    <span style={{fontSize:11,color:t.assignee==="Fede"?C.oro:C.perla2,fontWeight:600}}>{t.assignee}</span>
+                  </div>
+                  <span style={{fontSize:10,color:C.perla3}}>{t.day} · {t.week}</span>
                 </div>
               </div>
             ))
@@ -504,9 +527,9 @@ export default function App() {
       </div>
 
       {/* BODY */}
-      <div style={{display:"flex",flex:1,overflow:"hidden",background:C.main}}>
+      <div style={{display:"flex",flex:1,overflow:"hidden",background:C.main,alignItems:"stretch"}}>
         {/* MAIN */}
-        <div style={{flex:2,overflowY:"auto",minWidth:0,background:C.main,minHeight:"calc(100vh - 58px)"}}>
+        <div style={{flex:2,overflowY:"auto",minWidth:0,background:C.main}}>
 
           {/* RITUAL BANNER */}
           {view==="dia"&&(
@@ -639,7 +662,7 @@ export default function App() {
                         <Avatar user={user} size={36}/>
                         <div>
                           <div style={{fontSize:13,letterSpacing:2,color:C.perla,fontWeight:700}}>{user.toUpperCase()}</div>
-                          <div style={{fontSize:10,color:C.perla3,marginTop:2}}>{uTasks.length} tarea{uTasks.length!==1?"s":""} · {uDone} lista{uDone!==1?"s":""}</div>
+                          <div style={{fontSize:10,color:C.perla2,marginTop:2}}>{uTasks.length} tarea{uTasks.length!==1?"s":""} · {uDone} lista{uDone!==1?"s":""}</div>
                         </div>
                         <button onClick={()=>addTask(activeWeek,activeDay,activeMonth)} className="horo" style={{
                           marginLeft:"auto",background:"transparent",border:`1px solid ${C.border}`,color:C.perla3,
