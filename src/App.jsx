@@ -273,7 +273,7 @@ function RightPanel({ tasks, activeDay, activeWeek, onOpenTask }) {
 
   return (
     <div style={{
-      width:290, minWidth:290, flexShrink:0, flexGrow:1,
+      flex:"0 0 30%", minWidth:0,
       borderLeft:`2px solid ${C.borderH}`,
       background:C.panel, display:"flex", flexDirection:"column",
       height:"100%", overflowY:"auto",
@@ -396,6 +396,120 @@ function Celebration({ onDone }) {
         <div style={{fontSize:48,marginBottom:12}}>⚡</div>
         <div style={{fontSize:26,color:C.oro,fontWeight:700,letterSpacing:3,fontFamily:"'Cormorant Garamond',Georgia,serif"}}>DÍA CERRADO</div>
         <div style={{fontSize:13,color:C.perla2,marginTop:8}}>Todas las tareas completadas</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── NOTES PANEL ──────────────────────────────────────────────────────────────
+function NotesPanel() {
+  const NOTES_KEY = "pa_notes_v1";
+  const [notes, setNotes] = useState(()=>{
+    try{ return JSON.parse(localStorage.getItem(NOTES_KEY))||[]; }catch{ return []; }
+  });
+  const [text, setText] = useState("");
+  const [author, setAuthor] = useState("Fede");
+
+  function addNote() {
+    if(!text.trim()) return;
+    const note = {
+      id: Date.now(),
+      text: text.trim(),
+      author,
+      ts: new Date().toLocaleString("es-AR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}),
+    };
+    const next = [note, ...notes];
+    setNotes(next);
+    localStorage.setItem(NOTES_KEY, JSON.stringify(next));
+    setText("");
+  }
+
+  function deleteNote(id) {
+    const next = notes.filter(n=>n.id!==id);
+    setNotes(next);
+    localStorage.setItem(NOTES_KEY, JSON.stringify(next));
+  }
+
+  return (
+    <div style={{
+      flex:"0 0 25%", minWidth:0,
+      borderLeft:`2px solid ${C.borderH}`,
+      background:"#0d0d11", display:"flex", flexDirection:"column",
+      height:"100%",
+    }}>
+      {/* Header */}
+      <div style={{padding:"16px 18px",borderBottom:`1px solid ${C.border2}`,flexShrink:0}}>
+        <div style={{fontSize:9,color:C.oro,letterSpacing:2.5,marginBottom:12}}>✦ NOTAS DEL EQUIPO</div>
+        {/* Author selector */}
+        <div style={{display:"flex",gap:6,marginBottom:10}}>
+          {["Fede","Zikiel"].map(u=>(
+            <button key={u} onClick={()=>setAuthor(u)} style={{
+              flex:1, padding:"6px 0",
+              background:author===u?(u==="Fede"?C.oro_dim:"#1a1a2a"):"transparent",
+              border:`1px solid ${author===u?(u==="Fede"?C.oro_b:C.perla2+"66"):C.border}`,
+              color:author===u?(u==="Fede"?C.oro:C.perla2):C.perla3,
+              borderRadius:4, cursor:"pointer", fontFamily:"inherit",
+              fontSize:10, letterSpacing:1, transition:"all 0.15s",
+            }}>{u.toUpperCase()}</button>
+          ))}
+        </div>
+        {/* Input */}
+        <textarea
+          value={text}
+          onChange={e=>setText(e.target.value)}
+          onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();addNote();}}}
+          placeholder="Escribí una nota... (Enter para enviar)"
+          rows={3}
+          style={{
+            width:"100%", background:C.surface2,
+            border:`1px solid ${C.border}`, borderRadius:4,
+            color:C.perla, fontSize:12, fontFamily:"inherit",
+            padding:"9px 11px", resize:"none", outline:"none",
+            lineHeight:1.5,
+          }}
+        />
+        <button onClick={addNote} style={{
+          marginTop:7, width:"100%", padding:"8px 0",
+          background:C.oro_dim, border:`1px solid ${C.oro_b}`,
+          color:C.oro, borderRadius:4, cursor:"pointer",
+          fontFamily:"inherit", fontSize:10, letterSpacing:1.5,
+          transition:"all 0.15s",
+        }}>AGREGAR NOTA</button>
+      </div>
+
+      {/* Notes list */}
+      <div style={{flex:1,overflowY:"auto",padding:"14px 18px",display:"flex",flexDirection:"column",gap:10}}>
+        {notes.length===0
+          ? <div style={{fontSize:12,color:C.perla3,fontStyle:"italic",textAlign:"center",marginTop:24}}>
+              Sin notas aún —<br/>sean los primeros en escribir
+            </div>
+          : notes.map(n=>(
+            <div key={n.id} style={{
+              padding:"11px 13px",
+              background:C.surface2,
+              border:`1px solid ${C.border}`,
+              borderLeft:`3px solid ${n.author==="Fede"?C.oro:C.perla2}`,
+              borderRadius:5,
+              position:"relative",
+            }}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
+                <Avatar user={n.author} size={20}/>
+                <span style={{fontSize:11,fontWeight:700,color:n.author==="Fede"?C.oro:C.perla2,letterSpacing:0.5}}>{n.author}</span>
+                <span style={{fontSize:9,color:C.perla3,marginLeft:"auto"}}>{n.ts}</span>
+              </div>
+              <div style={{fontSize:13,color:C.perla,lineHeight:1.55,whiteSpace:"pre-wrap"}}>{n.text}</div>
+              <button onClick={()=>deleteNote(n.id)} style={{
+                position:"absolute",top:8,right:8,
+                background:"none",border:"none",color:C.perla3,
+                cursor:"pointer",fontSize:12,lineHeight:1,padding:2,
+                opacity:0.5,transition:"opacity 0.15s",
+              }}
+                onMouseEnter={e=>e.target.style.opacity=1}
+                onMouseLeave={e=>e.target.style.opacity=0.5}
+              >✕</button>
+            </div>
+          ))
+        }
       </div>
     </div>
   );
@@ -529,7 +643,7 @@ export default function App() {
       {/* BODY */}
       <div style={{display:"flex",flex:1,overflow:"hidden",background:C.main,alignItems:"stretch"}}>
         {/* MAIN */}
-        <div style={{flex:2,overflowY:"auto",minWidth:0,background:C.main}}>
+        <div style={{flex:"0 0 45%",overflowY:"auto",minWidth:0,background:C.main}}>
 
           {/* RITUAL BANNER */}
           {view==="dia"&&(
@@ -753,6 +867,9 @@ export default function App() {
 
         {/* RIGHT PANEL */}
         <RightPanel tasks={filtered} activeDay={activeDay} activeWeek={activeWeek} onOpenTask={setModal}/>
+
+        {/* NOTES PANEL */}
+        <NotesPanel/>
       </div>
 
       {/* MODAL */}
