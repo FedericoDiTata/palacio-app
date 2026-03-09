@@ -267,7 +267,7 @@ function RightPanel({ tasks, activeDay, activeWeek, onOpenTask }) {
 
   return (
     <div style={{
-      width:290, flexShrink:0,
+      width:290, minWidth:290, flexShrink:0, flexGrow:1,
       borderLeft:`2px solid ${C.borderH}`,
       background:C.panel, display:"flex", flexDirection:"column",
       height:"calc(100vh - 58px)", position:"sticky", top:58, overflowY:"auto",
@@ -440,6 +440,7 @@ export default function App() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
+        html, body, #root{height:100%;background:${C.bg};}
         ::-webkit-scrollbar{width:3px;height:3px;}
         ::-webkit-scrollbar-track{background:${C.bg};}
         ::-webkit-scrollbar-thumb{background:${C.border2};border-radius:2px;}
