@@ -643,7 +643,7 @@ export default function App() {
       {/* BODY */}
       <div style={{display:"flex",flex:1,overflow:"hidden",background:C.main,alignItems:"stretch"}}>
         {/* MAIN */}
-        <div style={{flex:"0 0 45%",overflowY:"auto",minWidth:0,background:C.main}}>
+        <div style={{flex:"0 0 45%",overflowY:"auto",minWidth:0,background:C.main,display:"flex",flexDirection:"column"}}>
 
           {/* RITUAL BANNER */}
           {view==="dia"&&(
@@ -683,7 +683,7 @@ export default function App() {
             </div>
           )}
 
-          <div style={{padding:"22px 26px"}}>
+          <div style={{padding: view==="dia" ? "22px 26px 0 26px" : "22px 26px"}}>
             {/* MONTH TABS */}
             <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:16,
               borderBottom:`1px solid ${C.border}`,paddingBottom:14}}>
@@ -736,61 +736,78 @@ export default function App() {
               })}
             </div>
 
-            {/* DAY TABS */}
-            {view==="dia"&&(
-              <div style={{display:"flex",gap:1,marginBottom:24,borderBottom:`1px solid ${C.border}`,overflowX:"auto"}}>
-                {currentDays.map((d)=>{
-                  const hasTasks=filtered.filter(t=>t.week===activeWeek&&t.day===d).length>0;
-                  const isToday=d===TODAY_DAY, isActive=d===activeDay;
-                  return (
-                    <button key={d} onClick={()=>setActiveDay(d)} style={{
-                      background:"transparent",border:"none",
-                      borderBottom:`2px solid ${isActive?C.oro:"transparent"}`,
-                      color:isActive?C.oro:hasTasks?C.perla2:C.perla3,
-                      padding:"10px 16px",cursor:"pointer",fontFamily:"inherit",
-                      fontSize:10,letterSpacing:2,transition:"all 0.15s",position:"relative",
-                      fontWeight:isActive?700:400,whiteSpace:"nowrap",flexShrink:0,
-                    }}>
-                      {(DAYS_FULL[d]||d).toUpperCase()}
-                      {isToday&&<div style={{position:"absolute",bottom:-1,left:"50%",transform:"translateX(-50%)",
-                        width:4,height:4,borderRadius:"50%",background:C.oro}}/>}
-                      {hasTasks&&!isActive&&<div style={{position:"absolute",top:5,right:5,
-                        width:3,height:3,borderRadius:"50%",background:C.border2}}/>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            {/* DAY TABS — se mueven dentro de cada columna */}
 
-            {/* VISTA DÍA */}
+            {/* VISTA DÍA — dos columnas */}
             {view==="dia"&&(
-              <div style={{maxWidth:720,display:"flex",flexDirection:"column",gap:28}}>
-                {USERS.map(user=>{
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:0,height:"100%"}}>
+                {USERS.map((user,ui)=>{
                   if(filterUser!=="Todos"&&filterUser!==user)return null;
-                  const uTasks=filtered.filter(t=>t.week===activeWeek&&t.day===activeDay&&t.assignee===user);
-                  const uDone=uTasks.filter(t=>t.status==="listo").length;
+                  const uTasks=filtered.filter(t=>t.week===activeWeek&&t.assignee===user);
+                  const uDayTasks=uTasks.filter(t=>t.day===activeDay);
+                  const uDone=uDayTasks.filter(t=>t.status==="listo").length;
+                  const userColor=user==="Fede"?C.oro:C.perla2;
                   return (
-                    <div key={user}>
-                      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14,
-                        paddingBottom:12,borderBottom:`1px solid ${C.border}`}}>
-                        <Avatar user={user} size={36}/>
-                        <div>
-                          <div style={{fontSize:13,letterSpacing:2,color:C.perla,fontWeight:700}}>{user.toUpperCase()}</div>
-                          <div style={{fontSize:10,color:C.perla2,marginTop:2}}>{uTasks.length} tarea{uTasks.length!==1?"s":""} · {uDone} lista{uDone!==1?"s":""}</div>
+                    <div key={user} style={{
+                      borderRight:ui===0?`1px solid ${C.borderH}`:"none",
+                      display:"flex",flexDirection:"column",minHeight:0,
+                    }}>
+                      {/* User header */}
+                      <div style={{
+                        padding:"16px 20px",
+                        borderBottom:`2px solid ${userColor}33`,
+                        background:`${userColor}08`,
+                        display:"flex",alignItems:"center",gap:12,flexShrink:0,
+                      }}>
+                        <Avatar user={user} size={38}/>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:14,letterSpacing:2,color:userColor,fontWeight:700}}>{user.toUpperCase()}</div>
+                          <div style={{fontSize:10,color:C.perla2,marginTop:2}}>
+                            {uDayTasks.length} tarea{uDayTasks.length!==1?"s":""} hoy · {uDone} lista{uDone!==1?"s":""}
+                          </div>
                         </div>
                         <button onClick={()=>addTask(activeWeek,activeDay,activeMonth)} className="horo" style={{
-                          marginLeft:"auto",background:"transparent",border:`1px solid ${C.border}`,color:C.perla3,
-                          borderRadius:4,padding:"7px 16px",cursor:"pointer",fontFamily:"inherit",fontSize:10,letterSpacing:1,transition:"all 0.15s"
+                          background:"transparent",border:`1px solid ${userColor}55`,color:userColor,
+                          borderRadius:4,padding:"6px 14px",cursor:"pointer",fontFamily:"inherit",
+                          fontSize:10,letterSpacing:1,transition:"all 0.15s"
                         }}>+ AGREGAR</button>
                       </div>
-                      <div style={{display:"flex",flexDirection:"column",gap:9}}>
-                        {uTasks.length===0
+
+                      {/* Day tabs per user */}
+                      <div style={{display:"flex",gap:0,borderBottom:`1px solid ${C.border}`,flexShrink:0,overflowX:"auto"}}>
+                        {currentDays.map((d)=>{
+                          const dt=uTasks.filter(t=>t.day===d);
+                          const isActive=d===activeDay, isToday=d===TODAY_DAY;
+                          return (
+                            <button key={d} onClick={()=>setActiveDay(d)} style={{
+                              flex:1,background:"transparent",border:"none",
+                              borderBottom:`2px solid ${isActive?userColor:"transparent"}`,
+                              color:isActive?userColor:dt.length>0?C.perla2:C.perla3,
+                              padding:"8px 4px",cursor:"pointer",fontFamily:"inherit",
+                              fontSize:9,letterSpacing:1,transition:"all 0.15s",
+                              fontWeight:isActive?700:400,whiteSpace:"nowrap",position:"relative",
+                              minWidth:0,
+                            }}>
+                              {d.toUpperCase()}
+                              {isToday&&<div style={{position:"absolute",bottom:-1,left:"50%",transform:"translateX(-50%)",
+                                width:3,height:3,borderRadius:"50%",background:userColor}}/>}
+                              {dt.length>0&&<div style={{position:"absolute",top:4,right:4,
+                                width:4,height:4,borderRadius:"50%",
+                                background:isActive?userColor:userColor+"88"}}/>}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Tasks */}
+                      <div style={{flex:1,overflowY:"auto",padding:"16px 18px",display:"flex",flexDirection:"column",gap:8}}>
+                        {uDayTasks.length===0
                           ?<div onClick={()=>addTask(activeWeek,activeDay,activeMonth)}
-                            style={{border:`1px dashed ${C.border}`,borderRadius:5,padding:22,textAlign:"center",
-                              color:C.perla3,fontSize:12,cursor:"pointer",transition:"all 0.15s"}}>
+                            style={{border:`1px dashed ${C.border}`,borderRadius:5,padding:28,textAlign:"center",
+                              color:C.perla3,fontSize:12,cursor:"pointer",transition:"all 0.15s",marginTop:8}}>
                             Sin tareas — click para agregar
                           </div>
-                          :uTasks.map(t=><TaskCard key={t.id} task={t} onOpen={setModal} onQuickDone={quickDone}/>)
+                          :uDayTasks.map(t=><TaskCard key={t.id} task={t} onOpen={setModal} onQuickDone={quickDone}/>)
                         }
                       </div>
                     </div>
