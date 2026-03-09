@@ -435,7 +435,7 @@ export default function App() {
     :`Falta${pendingN===1?"":"n"} ${pendingN} tarea${pendingN===1?"":"s"} para cerrar el día`;
 
   return (
-    <div style={{minHeight:"100vh",background:C.bg,color:C.perla,
+    <div style={{height:"100vh",background:C.bg,color:C.perla,
       fontFamily:"'Cormorant Garamond','Palatino Linotype',Georgia,serif",display:"flex",flexDirection:"column"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
@@ -503,7 +503,7 @@ export default function App() {
       </div>
 
       {/* BODY */}
-      <div style={{display:"flex",flex:1,overflow:"hidden",minHeight:"calc(100vh - 58px)"}}>
+      <div style={{display:"flex",flex:1,overflow:"hidden",background:C.main}}>
         {/* MAIN */}
         <div style={{flex:1,overflowY:"auto",minWidth:0,background:C.main,minHeight:"calc(100vh - 58px)"}}>
 
