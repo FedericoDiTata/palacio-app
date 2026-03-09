@@ -27,7 +27,7 @@ const C = {
 
 const MONTHS = [
   { id:"mar", label:"Marzo", weeks:[
-    { id:"Mar 10-16", label:"10–16 Mar", days:["Mar","Mié","Jue","Vie","Sáb","Dom"] },
+    { id:"Mar 9-16", label:"9–16 Mar", days:["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"] },
     { id:"Mar 17-23", label:"17–23 Mar", days:["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"] },
     { id:"Mar 24-30", label:"24–30 Mar", days:["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"] },
   ]},
@@ -55,8 +55,8 @@ const AVATAR_ZIKIEL = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAY
 let _tid = 400, _sid = 4000;
 
 const SEED = [
-  { id:16, title:"Lanzar campaña Marzo",  week:"Mar 10-16", day:"Lun", month:"mar", assignee:"Fede",   status:"pendiente", subtasks:[],                                                                                      decayDays:0 },
-  { id:17, title:"Reunión con proveedor", week:"Mar 10-16", day:"Mié", month:"mar", assignee:"Zikiel", status:"pendiente", subtasks:[],                                                                                      decayDays:0 },
+  { id:16, title:"Lanzar campaña Marzo",  week:"Mar 9-16", day:"Lun", month:"mar", assignee:"Fede",   status:"pendiente", subtasks:[], decayDays:0 },
+  { id:17, title:"Reunión con proveedor", week:"Mar 9-16", day:"Mié", month:"mar", assignee:"Zikiel", status:"pendiente", subtasks:[], decayDays:0 },
 ];
 
 function load(k,d){ try{const s=localStorage.getItem(k);return s?JSON.parse(s):d;}catch{return d;} }
@@ -383,7 +383,7 @@ export default function App() {
   const [tasks,        setTasks]      = useState(()=>load("pa_v5", SEED));
   const [view,         setView]       = useState("dia");
   const [activeMonth,  setActiveMonth]= useState("mar");
-  const [activeWeek,   setActiveWeek] = useState("Mar 10-16");
+  const [activeWeek,   setActiveWeek] = useState("Mar 9-16");
   const [activeDay,    setActiveDay]  = useState(TODAY_DAY);
   const [showPast,     setShowPast]   = useState(false);
   const [modal,        setModal]      = useState(null);
@@ -503,9 +503,9 @@ export default function App() {
       </div>
 
       {/* BODY */}
-      <div style={{display:"flex",flex:1,overflow:"hidden"}}>
+      <div style={{display:"flex",flex:1,overflow:"hidden",minHeight:"calc(100vh - 58px)"}}>
         {/* MAIN */}
-        <div style={{flex:1,overflowY:"auto",minWidth:0,background:C.main}}>
+        <div style={{flex:1,overflowY:"auto",minWidth:0,background:C.main,minHeight:"calc(100vh - 58px)"}}>
 
           {/* RITUAL BANNER */}
           {view==="dia"&&(
